@@ -1,146 +1,180 @@
 # my-workflow
 
-本仓库托管个人 `AGENTS.md`（全局 Agent 规则）与配套的 Codex skill 安装指引。
+> 跨平台个人 AI Coding Agent 工作流：一份 `AGENTS.md` 规则 + 一组 Codex Skill，统一你的 **Codex CLI / Claude Code / OpenCode** 行为。
 
 - 仓库地址：<https://github.com/kiritoxkiriko/my-agent-workflow>
-- 推荐克隆位置：`~/Dev/workspace/my-workflow`
-
-```bash
-git clone https://github.com/kiritoxkiriko/my-agent-workflow.git ~/Dev/workspace/my-workflow
-```
-
-[AGENTS.md](./AGENTS.md) 中以「主干整合」与「本地扩展」形式引用了若干 skill，其中 5 个本地扩展 skill **不属于 Superpowers 官方仓库**，需要单独安装到 `~/.codex/skills/` 才能命中。本 README 用作 agent 与人类操作者的安装入口。
+- 作者偏好：简体中文沟通、Superpowers 主干、最短路径优先、轻量任务直接干。
 
 ---
 
-## 一、缺失 skill 总览（与 AGENTS.md 对齐）
+## 这是什么？
 
-下列 skill 在 [AGENTS.md](./AGENTS.md) 「技能（Skills）」章节被引用，但默认未安装，agent 在命中触发词时会失败：
+`my-workflow` 把我对 AI coding agent 的所有「硬约束 / 默认偏好 / 触发流程」沉淀成两类资产：
 
-| Skill 名称 | 触发场景（来自 AGENTS.md / 上游 SKILL.md） | 上游仓库 | 本地目标路径 |
+| 资产 | 文件 / 仓库 | 作用 |
+|---|---|---|
+| 规则 | [`global/AGENTS.md`](./global/AGENTS.md) | 单文件全局规则：指令优先级、轻量任务策略、并行准入、commit 规范、沟通风格……<br/>来自 [Linux Do](https://linux.do) 用户 **leonsong**，本仓库在其基础上增改 |
+| 主工作流 skills | [`obra/superpowers`](https://github.com/obra/superpowers) | brainstorming / writing-plans / executing-plans / TDD / code-review / worktrees… |
+| 个人扩展 skills | 5 个 [`leonsong09/*`](https://github.com/leonsong09) 仓库 | 调研笔记、会话收尾、提交日报、项目日报、worktree 收口 |
+
+读完 [`global/AGENTS.md`](./global/AGENTS.md) 你就能知道我希望下游 agent 在什么时机做什么事；读 [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) 你（或一个 agent）可以一键把这套环境复刻到本机；本仓库根目录的 [`AGENTS.md`](./AGENTS.md) 仅服务于在本仓库内迭代这套 workflow 的 agent，与下游用户无关。
+
+---
+
+## 核心理念（30 秒速读）
+
+- **Superpowers 是主干**：`brainstorming → writing-plans → implementation → review → verification` 的纪律层。
+- **不强制 full Superpowers**：轻量任务（小 bug、文案、配置）默认走最短路径，不要把 1 行 fix 升级成 5 步流程。
+- **真相源唯一**：本机 `~/.codex/skills/` 之类的目录决定 skill 是否可用，[`global/AGENTS.md`](./global/AGENTS.md) 仅承载引用与触发说明。
+- **沟通**：默认简体中文 + 英文术语；结论先行，再补依据与权衡。
+- **安全**：无破坏性 git 命令、不操作 `.git`、不硬编码密钥。
+
+---
+
+## 我支持哪些 Agent？
+
+规则分发采用「**两个原生位 + 一个通用位**」策略：
+
+- **原生位**：Codex、Claude Code 保留各自官方约定的文件名，因为它们不认别的文件。
+- **通用位**：`~/.agents/AGENTS.md`，给所有遵循 [agents.md](https://agents.md) 开放标准的 agent 使用（OpenCode、未来的新 agent 等）。
+
+| Agent | Skill 安装位置 | 规则文件位置 | Superpowers 安装方式 |
 |---|---|---|---|
-| `research-note-wrap` | 调研总结 / 输出笔记（`总结调研`、`输出结论`、`总结分析`、`输出笔记`、`调研纪要`、`分析纪要`、`会话结论`） | https://github.com/leonsong09/research-note-wrap | `~/.codex/skills/research-note-wrap` |
-| `session-wrap` | 会话收尾（汇总产出、验证、风险、下一步） | https://github.com/leonsong09/session-wrap | `~/.codex/skills/session-wrap` |
-| `commit-daily-summary` | 提交总结 / 日报（按 git 提交聚合中文日报） | https://github.com/leonsong09/commit-daily-summary | `~/.codex/skills/commit-daily-summary` |
-| `project-daily-summary` | 项目级日报（按项目聚合 sessions / commits / 未提交改动） | https://github.com/leonsong09/project-daily-summary | `~/.codex/skills/project-daily-summary` |
-| `worktree-closeout` | worktree / branch / parallel 收口（只读巡检 + 后续 prompt） | https://github.com/leonsong09/worktree-closeout | `~/.codex/skills/worktree-closeout` |
+| **Codex CLI / Codex App** | `~/.codex/skills/<name>/SKILL.md` | `~/.codex/AGENTS.md` | 在 Codex 内 `/plugins` → 搜索 `superpowers` → 安装 |
+| **Claude Code** | `~/.claude/skills/<name>/SKILL.md` | `~/.claude/CLAUDE.md` | `/plugin install superpowers@claude-plugins-official` |
+| **OpenCode / 其他 AGENTS.md 兼容 agent** | `~/.config/opencode/skills/<name>/SKILL.md`（或其等价目录） | `~/.agents/AGENTS.md`（OpenCode 需在 `opencode.json` 用 `instructions` 字段引用） | 在 `opencode.json` 加 `"plugin": ["superpowers@git+https://github.com/obra/superpowers.git"]` |
 
-> 上游仓库结构均为 `SKILL.md` 位于仓库根目录，`name` 字段与仓库名一致，因此「克隆到 `~/.codex/skills/<repo-name>`」即可被 Codex 识别。
-
-未列入此表的 skill（`brainstorming` / `writing-plans` / `executing-plans` / `subagent-driven-development` / `dispatching-parallel-agents` / `using-git-worktrees` / `systematic-debugging` / `requesting-code-review` / `receiving-code-review` / `verification-before-completion` / `finishing-a-development-branch` / `test-driven-development` / `using-superpowers` / `writing-skills`）均由 [obra/superpowers](https://github.com/obra/superpowers) 提供，按上游 README 安装 Superpowers 插件即可，本 README 不重复。
+> 三家 skill 目录格式一致（`<dir>/SKILL.md` + YAML frontmatter），所以 5 个 `leonsong09/*` skill 用同一套 `git clone` 流程即可适配。
 
 ---
 
-## 二、给 Agent 的安装指南（可直接执行）
+## 快速开始（人类操作版）
 
-> 适用前提：本机已存在 `~/.codex/`（Codex 默认配置目录）。
-> 默认操作均为 **加性**（`git clone` / `git pull`），不会改写既有 skill 内容；仅在用户明确同意时才覆盖。
+> ✨ **不需要 clone 本仓库**。`AGENTS.md` 和 5 个 skill 都按需直接从各自的 raw URL 下载，本仓库本体只是这些资产的索引与文档。
 
-### 2.1 一键安装全部缺失 skill（幂等）
-
-Agent 可直接执行下面这段命令；已存在的目录会被跳过，缺失的会被克隆：
+### 1. 下载 `AGENTS.md` 到目标位置
 
 ```bash
-mkdir -p ~/.codex/skills
+RAW="https://raw.githubusercontent.com/kiritoxkiriko/my-agent-workflow/main/global/AGENTS.md"
+
+# 通用位（OpenCode 等 AGENTS.md 兼容 agent 都从这里读）
+mkdir -p "$HOME/.agents" && curl -fsSL "$RAW" -o "$HOME/.agents/AGENTS.md"
+
+# Codex 原生位（仅 Codex 用户需要执行）
+mkdir -p "$HOME/.codex" && curl -fsSL "$RAW" -o "$HOME/.codex/AGENTS.md"
+
+# Claude Code 原生位（仅 Claude Code 用户需要执行；Claude Code 默认读 CLAUDE.md）
+mkdir -p "$HOME/.claude" && curl -fsSL "$RAW" -o "$HOME/.claude/CLAUDE.md"
+```
+
+> 升级时重跑同样的 `curl` 命令即可。
+
+### 2. 安装 Superpowers（按你用的 agent 选一个）
+
+- **Codex CLI**：在交互界面输入 `/plugins`，搜索 `superpowers` 并安装。
+- **Claude Code**：在交互界面输入 `/plugin install superpowers@claude-plugins-official`。
+- **OpenCode**：编辑 `~/.config/opencode/opencode.json`，把 `superpowers` 加入 `plugin` 数组后重启 OpenCode。
+
+### 3. 安装 5 个个人扩展 skill（任何平台都执行；用 `PLATFORM` 切换目标目录）
+
+```bash
+PLATFORM=codex   # 可选：codex | claude | opencode
+case "$PLATFORM" in
+  codex)    DEST="$HOME/.codex/skills" ;;
+  claude)   DEST="$HOME/.claude/skills" ;;
+  opencode) DEST="$HOME/.config/opencode/skills" ;;
+esac
+
+mkdir -p "$DEST"
 for repo in research-note-wrap session-wrap commit-daily-summary project-daily-summary worktree-closeout; do
-  target="$HOME/.codex/skills/$repo"
-  if [ -d "$target/.git" ]; then
-    echo "[skip] $repo 已存在：$target"
+  if [ -d "$DEST/$repo/.git" ]; then
+    echo "[skip] $repo 已存在"
   else
-    git clone --depth 1 "https://github.com/leonsong09/$repo.git" "$target" \
-      && echo "[ok]   $repo -> $target" \
-      || echo "[fail] $repo 安装失败"
+    git clone --depth 1 "https://github.com/leonsong09/$repo.git" "$DEST/$repo"
   fi
 done
 ```
 
-### 2.2 一键更新全部已安装 skill
+> 这一步用 `git clone --depth 1` 而不是 `curl`，因为每个 skill 仓库可能包含 `SKILL.md` + 脚本 + 模板等多文件，需要保留目录结构；后续 `git pull` 也方便。
+
+### 4. OpenCode 的额外一步（仅 OpenCode 用户）
+
+让 `~/.agents/AGENTS.md` 真正被 OpenCode 加载，二选一：
+
+```jsonc
+// 方式 A（推荐）：在 ~/.config/opencode/opencode.json 通过 instructions 引用
+{ "instructions": ["~/.agents/AGENTS.md"] }
+```
 
 ```bash
+# 方式 B：再下一份到 OpenCode 的全局位
+mkdir -p "$HOME/.config/opencode"
+curl -fsSL "$RAW" -o "$HOME/.config/opencode/AGENTS.md"
+```
+
+### 5. 验证
+
+```bash
+# 通用：检查 SKILL.md 是否就位
 for repo in research-note-wrap session-wrap commit-daily-summary project-daily-summary worktree-closeout; do
-  target="$HOME/.codex/skills/$repo"
-  if [ -d "$target/.git" ]; then
-    git -C "$target" pull --ff-only && echo "[updated] $repo" || echo "[fail] $repo 更新失败"
-  else
-    echo "[missing] $repo 未安装，跳过；请先执行 2.1 安装命令"
-  fi
+  f="$DEST/$repo/SKILL.md"
+  [ -f "$f" ] && echo "[ok] $repo" || echo "[missing] $repo"
 done
 ```
 
-### 2.3 安装后自检（检查 SKILL.md 是否存在）
-
-```bash
-for repo in research-note-wrap session-wrap commit-daily-summary project-daily-summary worktree-closeout; do
-  f="$HOME/.codex/skills/$repo/SKILL.md"
-  if [ -f "$f" ]; then echo "[ok] $repo"; else echo "[missing] $repo"; fi
-done
-```
-
-### 2.4 卸载单个 skill（仅在用户明确要求时执行）
-
-```bash
-# 将 <skill-name> 替换为实际 skill 名
-rm -rf "$HOME/.codex/skills/<skill-name>"
-```
+在对应 agent 中说一句「总结今天的调研输出笔记」或「会话收尾」，命中触发词即代表安装成功。
 
 ---
 
-## 三、自动更新 AGENTS.md（与本地实际状态保持一致）
+## 快速开始（让 Agent 自己装）
 
-[AGENTS.md](./AGENTS.md) 是 agent 的真相源。安装 / 卸载完成后，agent 应执行以下同步动作，避免「文档说有、本地实际没有」或反之：
+把这一句话直接发给一个全新的 agent：
 
-### 3.1 同步原则
+> 请阅读并按 <https://raw.githubusercontent.com/kiritoxkiriko/my-agent-workflow/main/AGENT-BOOTSTRAP.md> 完成本机安装；目标平台是 `codex`（或 `claude` / `opencode`）。
 
-1. **真相源**：`~/.codex/skills/<name>/SKILL.md` 是否存在 = 该 skill 是否可用。
-2. **AGENTS.md 仅承载引用与触发说明**，不应承载安装状态以外的元信息。
-3. 当本地状态与 AGENTS.md 不一致时，按以下优先级处理：
-   - 本地存在、AGENTS.md 缺引用 → 在 [AGENTS.md](./AGENTS.md) 「技能（Skills）」章节追加一行（保持现有排版风格）。
-   - 本地缺失、AGENTS.md 已引用 → **不要**自动删除引用；改为提示用户运行 §2.1 安装，或经用户同意后注释掉对应行。
-   - 本地与 AGENTS.md 一致 → 不修改。
-
-### 3.2 Agent 同步流程（推荐顺序）
-
-Agent 收到「同步 AGENTS.md」请求时按以下步骤执行：
-
-1. 读取 [AGENTS.md](./AGENTS.md) 「技能（Skills）」章节，提取所有以反引号包裹的 skill 名。
-2. 读取 `~/.codex/skills/` 下所有子目录，校验是否含 `SKILL.md`。
-3. 对比两侧得到差集：`only_in_agents_md`（缺安装）、`only_in_local`（缺引用）。
-4. 输出差异表给用户，并给出建议动作（不在用户确认前直接修改 AGENTS.md）。
-5. 用户确认后，使用编辑工具最小化修改 [AGENTS.md](./AGENTS.md)：
-   - 新增引用：在「技能（Skills）」列表末尾追加一行 `- <用途简述>：\`<skill-name>\``。
-   - 不要触碰其他章节、不要重排顺序、不要附加说明性段落。
-
-### 3.3 一行差异检测命令（agent 可直接调用）
-
-下面命令打印「AGENTS.md 引用了但本地缺失」的 skill 名清单，作为同步前的快速诊断：
-
-```bash
-agents_md="$(pwd)/AGENTS.md"
-for repo in research-note-wrap session-wrap commit-daily-summary project-daily-summary worktree-closeout; do
-  in_doc=$(grep -c "\`$repo\`" "$agents_md" || true)
-  has_local=$([ -f "$HOME/.codex/skills/$repo/SKILL.md" ] && echo 1 || echo 0)
-  if [ "$in_doc" -gt 0 ] && [ "$has_local" -eq 0 ]; then
-    echo "[need-install] $repo"
-  fi
-  if [ "$in_doc" -eq 0 ] && [ "$has_local" -eq 1 ]; then
-    echo "[need-doc]     $repo"
-  fi
-done
-```
+agent 会按 [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) 的步骤完成 Superpowers + 5 个本地 skill + AGENTS.md 下载 + 自检。**全程不需要 clone 本仓库。**
 
 ---
 
-## 四、安全与边界
+## 我提供的 5 个个人扩展 Skill
 
-- 上述命令仅写入 `~/.codex/skills/` 与本仓库 [AGENTS.md](./AGENTS.md)；不修改任何应用代码、git 历史或全局配置。
-- 不引入额外依赖（仅使用系统 `git` 与 `bash`）。
-- Agent 在执行 §3 的写文档动作前，必须先输出差异并等待用户确认，符合 [AGENTS.md](./AGENTS.md) 中「文档维护」与「Safety Rules」的约束。
-- 上游仓库均为公开 MIT 仓库；安装即克隆源码，便于审阅其 `SKILL.md`。
+| Skill | 触发场景 | 上游仓库 |
+|---|---|---|
+| `research-note-wrap` | 把调研 / 分析整理为 Obsidian 风格 Markdown 笔记 | <https://github.com/leonsong09/research-note-wrap> |
+| `session-wrap` | 把当前 coding 会话压缩成结论 / 验证 / 风险 / 下一步 | <https://github.com/leonsong09/session-wrap> |
+| `commit-daily-summary` | 把一天的 git 提交聚合为中文日报 | <https://github.com/leonsong09/commit-daily-summary> |
+| `project-daily-summary` | 按项目聚合 sessions / commits / 未提交改动出日报 | <https://github.com/leonsong09/project-daily-summary> |
+| `worktree-closeout` | 跨会话只读巡检 worktree / branch，给出后续 prompt | <https://github.com/leonsong09/worktree-closeout> |
+
+> Superpowers 自带的 14 个主干 skill（brainstorming / writing-plans / executing-plans / subagent-driven-development / dispatching-parallel-agents / using-git-worktrees / systematic-debugging / requesting-code-review / receiving-code-review / verification-before-completion / finishing-a-development-branch / test-driven-development / using-superpowers / writing-skills）由 [obra/superpowers](https://github.com/obra/superpowers) 提供，按上面 §2 安装即可，无需单独 clone。
 
 ---
 
-## 五、新增 / 移除一个本地扩展 skill 时
+## 文档导航
 
-1. 在本 README 的 §2.1 / §2.2 / §2.3 / §3.3 命令中，将该 skill 名加入 / 移出 `for repo in ... ; do` 列表。
-2. 在 [AGENTS.md](./AGENTS.md) 「技能（Skills）」章节同步增删一行。
-3. 运行 §3.3 自检，确认两侧一致。
+| 给谁看 | 文件 | 内容 |
+|---|---|---|
+| 👤 人类 | [`README.md`](./README.md)（本文） | 项目概览、理念、各 agent 快速开始 |
+| 🤖 下游 Agent | [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) | 单段提示 + 一键执行脚本 + 下载 `global/AGENTS.md` 流程 |
+| 👤 + 🤖 下游 | [`global/AGENTS.md`](./global/AGENTS.md) | **要分发的全局规则**（会被 `curl` 下载到本机各 agent 规则位） |
+| 🛠️ 本仓库维护者 / agent | [`AGENTS.md`](./AGENTS.md) | **项目级规则**：在本仓库迭代 workflow 时 agent 必读；定义改谁、自检、commit 规范 |
+
+---
+
+## 升级 / 卸载
+
+- **升级 `AGENTS.md`**：重跑 §1 的 `curl` 命令即可拉到最新版。
+- **升级 Superpowers**：按各 agent 自带方式（Codex `/plugins`、Claude Code `/plugin update`、OpenCode 重新解析 plugin 包）。
+- **升级 5 个本地 skill**：`AGENT-BOOTSTRAP.md` §3 提供 `git pull` 循环。
+- **卸载某个 skill**：`rm -rf "<DEST>/<skill-name>"`，并在 [`global/AGENTS.md`](./global/AGENTS.md) 「技能（Skills）」章节移除对应行。
+
+---
+
+## License & 致谢
+
+- 本仓库自身：MIT。
+- [obra/superpowers](https://github.com/obra/superpowers)：MIT，本仓库的工作流主干。
+- [`global/AGENTS.md`](./global/AGENTS.md)：原始版本来自 [Linux Do](https://linux.do) 用户 **leonsong**，本仓库在其基础上做了个人化增改（致谢 🙏）。
+- 5 个 `leonsong09/*` skill：MIT，由其作者维护。
+
+如果你 fork 后做了改动，欢迎在 issues 交流；但请记得 [`global/AGENTS.md`](./global/AGENTS.md) 是高度个人化的偏好集合，建议从最小子集开始适配。

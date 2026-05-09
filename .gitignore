@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 编辑器 / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# AGENTS.md 分发过程产生的备份
+*.bak.*
+
+# 临时
+*.tmp
+.tmp/
