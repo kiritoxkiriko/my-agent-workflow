@@ -13,7 +13,7 @@
 
 | 资产 | 文件 / 仓库 | 作用 |
 |---|---|---|
-| 规则 | [`global/AGENTS.md`](./global/AGENTS.md) | 单文件全局规则：指令优先级、轻量任务策略、并行准入、commit 规范、沟通风格……<br/>来自 [Linux Do](https://linux.do) 用户 **leonsong**，本仓库在其基础上增改 |
+| 规则 | [`global/AGENTS.md`](./global/AGENTS.md) | 跨仓库稳定偏好：指令优先级、工作方式、安全边界、完成标准与输出规范。项目命令和局部约束留给项目级 `AGENTS.md`。<br/>来自 [Linux Do](https://linux.do) 用户 **leonsong**，本仓库在其基础上增改 |
 | 主工作流 skills | [`obra/superpowers`](https://github.com/obra/superpowers) | brainstorming / writing-plans / executing-plans / TDD / code-review / worktrees… |
 | 个人扩展 skills | 5 个 [`leonsong09/*`](https://github.com/leonsong09) 仓库 | 调研笔记、会话收尾、提交日报、项目日报、worktree 收口 |
 
@@ -25,7 +25,7 @@
 
 - **Superpowers 是主干**：`brainstorming → writing-plans → implementation → review → verification` 的纪律层。
 - **不强制 full Superpowers**：轻量任务（小 bug、文案、配置）默认走最短路径，不要把 1 行 fix 升级成 5 步流程。
-- **真相源唯一**：本机 `~/.codex/skills/` 之类的目录决定 skill 是否可用，[`global/AGENTS.md`](./global/AGENTS.md) 仅承载引用与触发说明。
+- **职责分离**：本机 `~/.codex/skills/` 之类的目录决定 skill 是否可用；[`global/AGENTS.md`](./global/AGENTS.md) 只承载跨仓库稳定偏好，不维护 skill 清单。
 - **沟通**：默认简体中文 + 英文术语；结论先行，再补依据与权衡。
 - **安全**：无破坏性 git 命令、不操作 `.git`、不硬编码密钥。
 
@@ -166,7 +166,7 @@ agent 会按 [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) 的步骤完成 Superp
 - **升级 `AGENTS.md`**：重跑 §1 的 `curl` 命令即可拉到最新版。
 - **升级 Superpowers**：按各 agent 自带方式（Codex `/plugins`、Claude Code `/plugin update`、OpenCode 重新解析 plugin 包）。
 - **升级 5 个本地 skill**：`AGENT-BOOTSTRAP.md` §3 提供 `git pull` 循环。
-- **卸载某个 skill**：`rm -rf "<DEST>/<skill-name>"`，并在 [`global/AGENTS.md`](./global/AGENTS.md) 「技能（Skills）」章节移除对应行。
+- **卸载某个 skill**：`rm -rf "<DEST>/<skill-name>"`，并同步更新本 README 的个人扩展 skill 表和 `AGENT-BOOTSTRAP.md` 中的安装清单。
 
 ---
 

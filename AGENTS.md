@@ -15,8 +15,7 @@
 
 1. 用户当前会话的明确要求
 2. 本 `AGENTS.md`（项目级）
-3. [`global/AGENTS.md`](./global/AGENTS.md) 中的通用条款（沟通风格、commit 规范、安全规则等仍生效）
-4. Superpowers / skill 流程定义
+3. [`global/AGENTS.md`](./global/AGENTS.md) 中适用于所有仓库的稳定个人偏好
 
 适用受众：在本仓库工作的 agent；或人类维护者按本文件做开发自检。
 
@@ -41,7 +40,7 @@
 
 | 触发情境 | 该改哪个文件 | 同步要点 |
 |---|---|---|
-| 新增 / 删除 / 重命名一个 skill | `global/AGENTS.md` 「技能（Skills）」章节 + `README.md` §「我提供的 5 个个人扩展 Skill」表 + `AGENT-BOOTSTRAP.md` §3 / §6 的 `for repo in ...` 列表 | 三处的 skill 名必须 100% 一致 |
+| 新增 / 删除 / 重命名一个 skill | `README.md` §「我提供的 5 个个人扩展 Skill」表 + `AGENT-BOOTSTRAP.md` §3 / §6 的 `for repo in ...` 列表 | 两处的 skill 名必须 100% 一致 |
 | 新增支持一种 agent（例：cursor / cline） | `README.md` §「我支持哪些 Agent？」表 + `AGENT-BOOTSTRAP.md` §1 派生路径 case + §2 安装方式 + §5 验证 case | 派生路径优先复用 `~/.agents/AGENTS.md` 通用位 |
 | 调整下游用户的全局工作流（流程升级 / 降级、新触发条件等） | `global/AGENTS.md` 对应章节 | 只动一处，下游 `curl` 重跑即可 |
 | 修改安装步骤 / 升级方式 | `AGENT-BOOTSTRAP.md`（agent 视角）+ `README.md` §快速开始（人类视角） | 两份步骤的小节序号对齐，便于互相引用 |
@@ -54,7 +53,7 @@
 
 ## 3. 默认开发流程（轻量为主）
 
-按 [`global/AGENTS.md`](./global/AGENTS.md) 「轻量任务默认策略」执行。本仓库的多数改动都属于轻量。
+本仓库的多数改动都属于轻量任务，默认按以下流程执行。
 
 ```
 理解请求 → 影响面分析 → 直接修改 → 自检 → 输出报告
@@ -66,7 +65,7 @@
 - 引入新的目标 agent / 新的安装机制 / 新的分发协议
 - 涉及现有 skill 的兼容性（例如改 skill 触发词命名规则）
 
-升级时启用 `brainstorming → writing-plans → implementation` 主干，并在仓库内以 issue / PR 描述沉淀短计划。
+升级时先明确目标、边界、风险与验证方式，再进入实现，并在仓库内以 issue / PR 描述沉淀短计划。
 
 ---
 
@@ -76,7 +75,7 @@
 
 - [ ] 这个改动是「全局规则」「安装动作」「人类导览」「项目级流程」的哪一类？只动对应文件。
 - [ ] 是否动了 `global/AGENTS.md` 里被 `curl` 分发的部分？如果是，下游用户重跑安装才能拿到新版，必要时在 commit message 提示。
-- [ ] 是否动了 `AGENT-BOOTSTRAP.md` 里 `for repo in ...` 等硬编码列表？必须与 `global/AGENTS.md` 保持一致。
+- [ ] 是否动了 `AGENT-BOOTSTRAP.md` 里 `for repo in ...` 等硬编码列表？必须与 `README.md` 的个人扩展 skill 清单保持一致。
 - [ ] `README.md` 与 `AGENT-BOOTSTRAP.md` 的小节编号是否还能对齐（README §1↔ Bootstrap §4，README §3↔ Bootstrap §3 等）？
 - [ ] 命令是否仍然 **不需要 clone 本仓库** 即可完成？（这是本项目的硬约束）
 
@@ -85,11 +84,9 @@
 ## 5. 自检（提交前必跑）
 
 ```bash
-# 5.1 三处 skill 列表一致
-agents_skills=$(grep -oE '`(research-note-wrap|session-wrap|commit-daily-summary|project-daily-summary|worktree-closeout)`' global/AGENTS.md | sort -u)
+# 5.1 两处 skill 列表一致
 readme_skills=$(grep -oE '`(research-note-wrap|session-wrap|commit-daily-summary|project-daily-summary|worktree-closeout)`' README.md | sort -u)
 boot_skills=$(grep -oE '(research-note-wrap|session-wrap|commit-daily-summary|project-daily-summary|worktree-closeout)' AGENT-BOOTSTRAP.md | sort -u)
-diff <(echo "$agents_skills") <(echo "$readme_skills") && echo "[ok] global/AGENTS.md ↔ README.md skill 列表一致"
 diff <(echo "$readme_skills" | tr -d '`') <(echo "$boot_skills") && echo "[ok] README.md ↔ AGENT-BOOTSTRAP.md skill 列表一致"
 
 # 5.2 raw URL 域名拼写（必须指向 main/global/AGENTS.md）
@@ -109,7 +106,7 @@ done
 
 ## 6. Commit / Push 规范
 
-继承 [`global/AGENTS.md`](./global/AGENTS.md) 的 commit 规范：
+本仓库采用以下 commit 规范：
 
 - 格式：`<type>(scope): <summary>`
 - `summary` 中文、动词开头、≤ 50 字、不加句号
@@ -140,7 +137,7 @@ refactor(agents): 调整本仓库迭代自检命令
 
 ## 8. 安全 / 边界（项目级补充）
 
-[`global/AGENTS.md`](./global/AGENTS.md) 「Safety Rules」全部继承，再补充：
+本仓库遵守以下安全边界：
 
 - 禁止把私人路径（如 `/Users/bytedance/...`）写入任何会被 `curl` 分发的文件（`global/AGENTS.md` / `AGENT-BOOTSTRAP.md` / `README.md`）；只允许出现 `$HOME` / `~/`。
 - 禁止把内部链接、内网 ID、token、API Key 写入任何文件。
@@ -166,7 +163,7 @@ agent 第一次进入本仓库时，建议输出：
 ```
 ✅ 已识别项目：kiritoxkiriko/my-agent-workflow
 🧠 已加载：AGENTS.md（项目级流程）+ global/AGENTS.md（要分发的全局规则，仅参考）
-📌 默认按轻量任务执行；涉及 ≥3 文件 / 新 agent 平台 / 新分发协议时升级到 brainstorming
+📌 默认按轻量任务执行；涉及 ≥3 文件 / 新 agent 平台 / 新分发协议时升级为中流程
 ```
 
 然后再处理用户实际请求。
