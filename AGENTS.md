@@ -27,6 +27,7 @@
 |---|---|---|
 | [`global/AGENTS.md`](./global/AGENTS.md) | 全局规则真相源；通过 raw URL 被下游 `curl` 下载到 `~/.agents/AGENTS.md` 等 | ✅ |
 | [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) | 给新 agent 直接读取并执行的安装剧本 | ✅ raw URL |
+| [`TERMINAL-SETUP.md`](./TERMINAL-SETUP.md) | macOS 终端工具链安装剧本；独立于 Agent 环境安装 | ✅ raw URL |
 | [`README.md`](./README.md) | 给人类的项目导览 + 快速开始 | 仅 GitHub 阅读 |
 | [`AGENTS.md`](./AGENTS.md)（本文件） | 项目级 agent 迭代规则；仅本仓库内生效 | ❌ |
 | [`LICENSE`](./LICENSE) | MIT | ✅ |
@@ -44,10 +45,11 @@
 | 新增支持一种 agent（例：cursor / cline） | `README.md` §「我支持哪些 Agent？」表 + `AGENT-BOOTSTRAP.md` §1 派生路径 case + §2 安装方式 + §5 验证 case | 派生路径优先复用 `~/.agents/AGENTS.md` 通用位 |
 | 调整下游用户的全局工作流（流程升级 / 降级、新触发条件等） | `global/AGENTS.md` 对应章节 | 只动一处，下游 `curl` 重跑即可 |
 | 修改安装步骤 / 升级方式 | `AGENT-BOOTSTRAP.md`（agent 视角）+ `README.md` §快速开始（人类视角） | 两份步骤的小节序号对齐，便于互相引用 |
+| 修改 Yazi / zoxide / Neovim 等终端工具链 | `TERMINAL-SETUP.md`（安装剧本）+ `README.md`（入口与摘要） | 不并入 `AGENT-BOOTSTRAP.md`；不得无提示覆盖用户现有 dotfiles |
 | 调整本仓库迭代流程 | 本 `AGENTS.md` | 不影响下游 |
 | 措辞 / 排版微调 | 谁的就改谁的 | — |
 
-判断口诀：**新规则给下游 → `global/AGENTS.md`；新动作 → `AGENT-BOOTSTRAP.md`；新解释 → `README.md`；本仓库内的开发流程 → 本文件。**
+判断口诀：**新规则给下游 → `global/AGENTS.md`；Agent 安装动作 → `AGENT-BOOTSTRAP.md`；终端安装动作 → `TERMINAL-SETUP.md`；新解释 → `README.md`；本仓库内的开发流程 → 本文件。**
 
 ---
 
@@ -77,6 +79,7 @@
 - [ ] 是否动了 `global/AGENTS.md` 里被 `curl` 分发的部分？如果是，下游用户重跑安装才能拿到新版，必要时在 commit message 提示。
 - [ ] 是否动了 `AGENT-BOOTSTRAP.md` 里 `for repo in ...` 等硬编码列表？必须与 `README.md` 的个人扩展 skill 清单保持一致。
 - [ ] `README.md` 与 `AGENT-BOOTSTRAP.md` 的小节编号是否还能对齐（README §1↔ Bootstrap §4，README §3↔ Bootstrap §3 等）？
+- [ ] 是否修改了 `TERMINAL-SETUP.md`？必须同步核对 `README.md` 的入口与摘要，且不得写入私人绝对路径或凭证。
 - [ ] 命令是否仍然 **不需要 clone 本仓库** 即可完成？（这是本项目的硬约束）
 
 ---
@@ -89,12 +92,16 @@ readme_skills=$(grep -oE '`(research-note-wrap|session-wrap|commit-daily-summary
 boot_skills=$(grep -oE '(research-note-wrap|session-wrap|commit-daily-summary|project-daily-summary|worktree-closeout)' AGENT-BOOTSTRAP.md | sort -u)
 diff <(echo "$readme_skills" | tr -d '`') <(echo "$boot_skills") && echo "[ok] README.md ↔ AGENT-BOOTSTRAP.md skill 列表一致"
 
-# 5.2 raw URL 域名拼写（必须指向 main/global/AGENTS.md）
-grep -nE 'raw\.githubusercontent\.com/kiritoxkiriko/my-agent-workflow/main/global/AGENTS\.md' README.md AGENT-BOOTSTRAP.md \
-  || echo "[warn] 未匹配到预期 raw URL"
+# 5.2 raw URL 域名拼写
+grep -qE 'raw\.githubusercontent\.com/kiritoxkiriko/my-agent-workflow/main/global/AGENTS\.md' README.md AGENT-BOOTSTRAP.md \
+  && echo "[ok] global/AGENTS.md raw URL" \
+  || echo "[warn] 未匹配到 global/AGENTS.md raw URL"
+grep -qE 'raw\.githubusercontent\.com/kiritoxkiriko/my-agent-workflow/main/TERMINAL-SETUP\.md' README.md \
+  && echo "[ok] TERMINAL-SETUP.md raw URL" \
+  || echo "[warn] 未匹配到 TERMINAL-SETUP.md raw URL"
 
 # 5.3 文件大小 sanity check（避免误清空）
-for f in AGENTS.md global/AGENTS.md AGENT-BOOTSTRAP.md README.md LICENSE; do
+for f in AGENTS.md global/AGENTS.md AGENT-BOOTSTRAP.md TERMINAL-SETUP.md README.md LICENSE; do
   size=$(wc -c < "$f")
   [ "$size" -gt 200 ] && echo "[ok]  $f ($size B)" || echo "[warn] $f 仅 $size B，疑似被清空"
 done
@@ -129,7 +136,7 @@ refactor(agents): 调整本仓库迭代自检命令
 
 本仓库没有传统 release，但需要意识到：
 
-- `global/AGENTS.md` / `AGENT-BOOTSTRAP.md` 一旦 push 到 `main`，下游用户**任意时间重跑 README §1 的 `curl`** 都会拿到新版本。
+- `global/AGENTS.md` / `AGENT-BOOTSTRAP.md` / `TERMINAL-SETUP.md` 一旦 push 到 `main`，下游用户**任意时间重跑 README 中对应的 raw URL** 都会拿到新版本。
 - 因此：避免在 `main` 上保留半成品状态；大改建议走特性分支或临时 commit 后立刻完成。
 - 若需要钉版本，在 commit message 里写明 SHA，提示用户使用 `https://raw.githubusercontent.com/kiritoxkiriko/my-agent-workflow/<sha>/global/AGENTS.md`。
 
@@ -139,7 +146,7 @@ refactor(agents): 调整本仓库迭代自检命令
 
 本仓库遵守以下安全边界：
 
-- 禁止把私人路径（如 `/Users/bytedance/...`）写入任何会被 `curl` 分发的文件（`global/AGENTS.md` / `AGENT-BOOTSTRAP.md` / `README.md`）；只允许出现 `$HOME` / `~/`。
+- 禁止把私人路径（如 `/Users/bytedance/...`）写入任何会被 `curl` 分发的文件（`global/AGENTS.md` / `AGENT-BOOTSTRAP.md` / `TERMINAL-SETUP.md` / `README.md`）；只允许出现 `$HOME` / `~/`。
 - 禁止把内部链接、内网 ID、token、API Key 写入任何文件。
 - 本 `AGENTS.md` 允许出现仓库内绝对路径作为示意，但同样不放凭证。
 

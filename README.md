@@ -1,6 +1,6 @@
 # my-workflow
 
-> 跨平台个人 AI Coding Agent 工作流：一份 `AGENTS.md` 规则 + 一组 Codex Skill，统一你的 **Codex CLI / Claude Code / OpenCode** 行为。
+> 个人 AI Coding Agent + 终端工作流：统一 **Codex CLI / Claude Code / OpenCode** 行为，并复刻常用 macOS 终端环境。
 
 - 仓库地址：<https://github.com/kiritoxkiriko/my-agent-workflow>
 - 作者偏好：简体中文沟通、Superpowers 主干、最短路径优先、轻量任务直接干。
@@ -9,13 +9,14 @@
 
 ## 这是什么？
 
-`my-workflow` 把我对 AI coding agent 的所有「硬约束 / 默认偏好 / 触发流程」沉淀成两类资产：
+`my-workflow` 把我对 AI coding agent 的「硬约束 / 默认偏好 / 触发流程」和日常终端环境沉淀成可复现资产：
 
 | 资产 | 文件 / 仓库 | 作用 |
 |---|---|---|
 | 规则 | [`global/AGENTS.md`](./global/AGENTS.md) | 跨仓库稳定偏好：指令优先级、工作方式、安全边界、完成标准与输出规范。项目命令和局部约束留给项目级 `AGENTS.md`。<br/>来自 [Linux Do](https://linux.do) 用户 **leonsong**，本仓库在其基础上增改 |
 | 主工作流 skills | [`obra/superpowers`](https://github.com/obra/superpowers) | brainstorming / writing-plans / executing-plans / TDD / code-review / worktrees… |
 | 个人扩展 skills | 5 个 [`leonsong09/*`](https://github.com/leonsong09) 仓库 | 调研笔记、会话收尾、提交日报、项目日报、worktree 收口 |
+| 终端工具链 | [`TERMINAL-SETUP.md`](./TERMINAL-SETUP.md) | Yazi + zoxide + Neovim，动态匹配 Solarized Light / Dark 并用 zoxide 替换 jump |
 
 读完 [`global/AGENTS.md`](./global/AGENTS.md) 你就能知道我希望下游 agent 在什么时机做什么事；读 [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) 你（或一个 agent）可以一键把这套环境复刻到本机；本仓库根目录的 [`AGENTS.md`](./AGENTS.md) 仅服务于在本仓库内迭代这套 workflow 的 agent，与下游用户无关。
 
@@ -136,6 +137,23 @@ agent 会按 [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) 的步骤完成 Superp
 
 ---
 
+## 可选：同步终端工具链
+
+macOS + Homebrew + Zsh 用户可以把下面这句话交给 Agent：
+
+> 请阅读并按 <https://raw.githubusercontent.com/kiritoxkiriko/my-agent-workflow/main/TERMINAL-SETUP.md> 配置本机终端；保留已有配置，修改前先备份并展示差异。
+
+[`TERMINAL-SETUP.md`](./TERMINAL-SETUP.md) 会完成：
+
+- 安装 Yazi、zoxide 和图片 / 视频 / PDF / 压缩包预览依赖。
+- 配置 Yazi 的目录书签、Solarized Light / Dark 自动切换，并把 Neovim 设为默认文本编辑器。
+- 加入 `y` 的 CWD 包装函数与 zoxide 的 `z` / `zi`，移除功能重叠的 jump。
+- 为 Neovim 安装 `solarized.nvim`，匹配 Ghostty 的 Solarized Light / Dark。
+
+这份剧本不会安装 Neovim Codex 插件；卸载 jump 前仍要求用户明确确认。终端配置与 Agent 工作流相互独立，不影响上面的 `AGENT-BOOTSTRAP.md` 五步安装。
+
+---
+
 ## 我提供的 5 个个人扩展 Skill
 
 | Skill | 触发场景 | 上游仓库 |
@@ -156,6 +174,7 @@ agent 会按 [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) 的步骤完成 Superp
 |---|---|---|
 | 👤 人类 | [`README.md`](./README.md)（本文） | 项目概览、理念、各 agent 快速开始 |
 | 🤖 下游 Agent | [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) | 单段提示 + 一键执行脚本 + 下载 `global/AGENTS.md` 流程 |
+| 👤 + 🤖 macOS 用户 | [`TERMINAL-SETUP.md`](./TERMINAL-SETUP.md) | Yazi / zoxide / Neovim 安装、Solarized 配置、验证与回滚 |
 | 👤 + 🤖 下游 | [`global/AGENTS.md`](./global/AGENTS.md) | **要分发的全局规则**（会被 `curl` 下载到本机各 agent 规则位） |
 | 🛠️ 本仓库维护者 / agent | [`AGENTS.md`](./AGENTS.md) | **项目级规则**：在本仓库迭代 workflow 时 agent 必读；定义改谁、自检、commit 规范 |
 
@@ -167,6 +186,7 @@ agent 会按 [`AGENT-BOOTSTRAP.md`](./AGENT-BOOTSTRAP.md) 的步骤完成 Superp
 - **升级 Superpowers**：按各 agent 自带方式（Codex `/plugins`、Claude Code `/plugin update`、OpenCode 重新解析 plugin 包）。
 - **升级 5 个本地 skill**：`AGENT-BOOTSTRAP.md` §3 提供 `git pull` 循环。
 - **卸载某个 skill**：`rm -rf "<DEST>/<skill-name>"`，并同步更新本 README 的个人扩展 skill 表和 `AGENT-BOOTSTRAP.md` 中的安装清单。
+- **升级或回滚终端工具链**：按 [`TERMINAL-SETUP.md`](./TERMINAL-SETUP.md) §2 / §8 执行；已有配置先备份再合并。
 
 ---
 
