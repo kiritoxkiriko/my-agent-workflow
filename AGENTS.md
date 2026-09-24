@@ -1,6 +1,6 @@
 # AGENTS.md（项目级规则）
 
-> **本文件是仓库 `kiritoxkiriko/my-agent-workflow` 的项目级 Agent 规则。**
+> **本文件是仓库 `kiritoxkiriko/my-workflow` 的项目级 Agent 规则。**
 >
 > Codex / Claude Code / OpenCode 进入本仓库工作时会优先读取本文件；其后再叠加用户的全局规则（用户已安装到 `~/.agents/AGENTS.md` / `~/.codex/AGENTS.md` / `~/.claude/CLAUDE.md`）。
 >
@@ -41,8 +41,8 @@
 
 | 触发情境 | 该改哪个文件 | 同步要点 |
 |---|---|---|
-| 新增 / 删除 / 重命名一个 skill | `README.md` §「我提供的 5 个个人扩展 Skill」表 + `AGENT-BOOTSTRAP.md` §3 / §6 的 `for repo in ...` 列表 | 两处的 skill 名必须 100% 一致 |
-| 新增支持一种 agent（例：cursor / cline） | `README.md` §「我支持哪些 Agent？」表 + `AGENT-BOOTSTRAP.md` §1 派生路径 case + §2 安装方式 + §5 验证 case | 派生路径优先复用 `~/.agents/AGENTS.md` 通用位 |
+| 新增 / 删除 / 重命名一个 skill | `README.md` §「我提供的 5 个个人扩展 Skill」表 + `AGENT-BOOTSTRAP.md` §1 的 `SKILL_REPOS` 清单 | 两处的 skill 名必须 100% 一致 |
+| 新增支持一种 agent（例：cursor / cline） | `README.md` §「我支持哪些 Agent？」表 + `AGENT-BOOTSTRAP.md` §1 派生路径 case + §3 软链接 + §5 验证 | 派生路径优先复用 `~/.agents/AGENTS.md` 通用位 |
 | 调整下游用户的全局工作流（流程升级 / 降级、新触发条件等） | `global/AGENTS.md` 对应章节 | 只动一处，下游 `curl` 重跑即可 |
 | 修改安装步骤 / 升级方式 | `AGENT-BOOTSTRAP.md`（agent 视角）+ `README.md` §快速开始（人类视角） | 两份步骤的小节序号对齐，便于互相引用 |
 | 修改 Yazi / zoxide / Neovim 等终端工具链 | `TERMINAL-SETUP.md`（安装剧本）+ `README.md`（入口与摘要） | 不并入 `AGENT-BOOTSTRAP.md`；不得无提示覆盖用户现有 dotfiles |
@@ -77,8 +77,8 @@
 
 - [ ] 这个改动是「全局规则」「安装动作」「人类导览」「项目级流程」的哪一类？只动对应文件。
 - [ ] 是否动了 `global/AGENTS.md` 里被 `curl` 分发的部分？如果是，下游用户重跑安装才能拿到新版，必要时在 commit message 提示。
-- [ ] 是否动了 `AGENT-BOOTSTRAP.md` 里 `for repo in ...` 等硬编码列表？必须与 `README.md` 的个人扩展 skill 清单保持一致。
-- [ ] `README.md` 与 `AGENT-BOOTSTRAP.md` 的小节编号是否还能对齐（README §1↔ Bootstrap §4，README §3↔ Bootstrap §3 等）？
+- [ ] 是否动了 `AGENT-BOOTSTRAP.md` 里 `SKILL_REPOS` 等硬编码列表？必须与 `README.md` 的个人扩展 skill 清单保持一致。
+- [ ] `README.md` 与 `AGENT-BOOTSTRAP.md` 的小节编号是否还能对齐（两份文档均为 §1 平台与预检、§2 共享安装、§3 软链接、§4 规则、§5 验证）？
 - [ ] 是否修改了 `TERMINAL-SETUP.md`？必须同步核对 `README.md` 的入口与摘要，且不得写入私人绝对路径或凭证。
 - [ ] 命令是否仍然 **不需要 clone 本仓库** 即可完成？（这是本项目的硬约束）
 
@@ -93,10 +93,10 @@ boot_skills=$(grep -oE '(research-note-wrap|session-wrap|commit-daily-summary|pr
 diff <(echo "$readme_skills" | tr -d '`') <(echo "$boot_skills") && echo "[ok] README.md ↔ AGENT-BOOTSTRAP.md skill 列表一致"
 
 # 5.2 raw URL 域名拼写
-grep -qE 'raw\.githubusercontent\.com/kiritoxkiriko/my-agent-workflow/main/global/AGENTS\.md' README.md AGENT-BOOTSTRAP.md \
+grep -qE 'raw\.githubusercontent\.com/kiritoxkiriko/my-workflow/main/global/AGENTS\.md' README.md AGENT-BOOTSTRAP.md \
   && echo "[ok] global/AGENTS.md raw URL" \
   || echo "[warn] 未匹配到 global/AGENTS.md raw URL"
-grep -qE 'raw\.githubusercontent\.com/kiritoxkiriko/my-agent-workflow/main/TERMINAL-SETUP\.md' README.md \
+grep -qE 'raw\.githubusercontent\.com/kiritoxkiriko/my-workflow/main/TERMINAL-SETUP\.md' README.md \
   && echo "[ok] TERMINAL-SETUP.md raw URL" \
   || echo "[warn] 未匹配到 TERMINAL-SETUP.md raw URL"
 
@@ -138,7 +138,7 @@ refactor(agents): 调整本仓库迭代自检命令
 
 - `global/AGENTS.md` / `AGENT-BOOTSTRAP.md` / `TERMINAL-SETUP.md` 一旦 push 到 `main`，下游用户**任意时间重跑 README 中对应的 raw URL** 都会拿到新版本。
 - 因此：避免在 `main` 上保留半成品状态；大改建议走特性分支或临时 commit 后立刻完成。
-- 若需要钉版本，在 commit message 里写明 SHA，提示用户使用 `https://raw.githubusercontent.com/kiritoxkiriko/my-agent-workflow/<sha>/global/AGENTS.md`。
+- 若需要钉版本，在 commit message 里写明 SHA，提示用户使用 `https://raw.githubusercontent.com/kiritoxkiriko/my-workflow/<sha>/global/AGENTS.md`。
 
 ---
 
@@ -168,7 +168,7 @@ refactor(agents): 调整本仓库迭代自检命令
 agent 第一次进入本仓库时，建议输出：
 
 ```
-✅ 已识别项目：kiritoxkiriko/my-agent-workflow
+✅ 已识别项目：kiritoxkiriko/my-workflow
 🧠 已加载：AGENTS.md（项目级流程）+ global/AGENTS.md（要分发的全局规则，仅参考）
 📌 默认按轻量任务执行；涉及 ≥3 文件 / 新 agent 平台 / 新分发协议时升级为中流程
 ```
